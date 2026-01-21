@@ -68,7 +68,10 @@ def read_conf(config_file):
         conf['time']['twice'] = cfg.getfloat('time', 'twice')
         conf['time']['press'] = cfg.getfloat('time', 'press')
         # disk
-        conf['disk']['extra'] = cfg.get('disk', 'extra').split(',')
+        if cfg.has_option('disk', 'extra'):
+            conf['disk']['extra'] = cfg.get('disk', 'extra').split(',')
+        else:
+            conf['disk']['extra'] = []
         # other
         conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
         conf['slider']['time'] = cfg.getfloat('slider', 'time')
