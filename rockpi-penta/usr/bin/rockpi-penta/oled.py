@@ -59,25 +59,45 @@ def goodbye():
 
 def put_disk_info():
     k, v = misc.get_disk_info()
-    text1 = 'Disk: {} {}'.format(k[0], v[0])
-
-    if len(k) == 5:
-        text2 = '{} {}  {} {}'.format(k[1], v[1], k[2], v[2])
-        text3 = '{} {}  {} {}'.format(k[3], v[3], k[4], v[4])
-        page = [
-            {'xy': (0, -2), 'text': text1, 'fill': 255, 'font': font['11']},
-            {'xy': (0, 10), 'text': text2, 'fill': 255, 'font': font['11']},
-            {'xy': (0, 21), 'text': text3, 'fill': 255, 'font': font['11']},
-        ]
-    elif len(k) == 3:
-        text2 = '{} {}  {} {}'.format(k[1], v[1], k[2], v[2])
-        page = [
-            {'xy': (0, 2), 'text': text1, 'fill': 255, 'font': font['12']},
-            {'xy': (0, 18), 'text': text2, 'fill': 255, 'font': font['12']},
-        ]
-    else:
-        page = [{'xy': (0, 2), 'text': text1, 'fill': 255, 'font': font['14']}]
-
+    
+    # Build text lines for all disks
+    lines = []
+    for i in range(len(k)):
+        text = '{} {} {}'.format(k[i], v[i][0], v[i][1])
+        lines.append(text)
+    
+    num_lines = len(lines)
+    
+    # Calculate appropriate font size based on number of lines
+    # Display is 32 pixels high
+    if num_lines <= 2:
+        selected_font = font['12']
+        line_height = 16
+    elif num_lines == 3:
+        selected_font = font['11']
+        line_height = 11
+    elif num_lines == 4:
+        selected_font = font['10']
+        line_height = 8
+    else:  # 5 or more
+        selected_font = font['10']
+        line_height = 6
+    
+    # Calculate starting Y position to center vertically
+    total_height = num_lines * line_height
+    start_y = max(0, (32 - total_height) // 2)
+    
+    # Build page with dynamic positioning
+    page = []
+    for i, text in enumerate(lines):
+        y_pos = start_y + (i * line_height)
+        page.append({
+            'xy': (0, y_pos),
+            'text': text,
+            'fill': 255,
+            'font': selected_font
+        })
+    
     return page
 
 

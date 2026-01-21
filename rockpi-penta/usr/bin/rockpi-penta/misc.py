@@ -67,6 +67,8 @@ def read_conf(config_file):
         # time
         conf['time']['twice'] = cfg.getfloat('time', 'twice')
         conf['time']['press'] = cfg.getfloat('time', 'press')
+        # disk
+        conf['disk']['extra'] = cfg.get('disk', 'extra').split(',')
         # other
         conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
         conf['slider']['time'] = cfg.getfloat('slider', 'time')
@@ -91,6 +93,7 @@ def read_conf(config_file):
         conf['slider']['time'] = 10  # second
         conf['oled']['rotate'] = False
         conf['oled']['f-temp'] = False
+        conf['disk']['extra'] = []
 
     return conf
 
@@ -136,16 +139,22 @@ def watch_key(q=None):
 def get_disk_info(cache={}):
     if not cache.get('time') or time.time() - cache['time'] > 30:
         info = {}
-        cmd = "df -h | awk '$NF==\"/\"{printf \"%s\", $5}'"
-        info['root'] = check_output(cmd)
-        for x in conf['disk']:
-            cmd = "df -Bg | awk '$1==\"/dev/{}\" {{printf \"%s\", $5}}'".format(x)
-            info[x] = check_output(cmd)
+        
+        cmd = "df -h | awk '$NF==\"/\"{printf \"%s %s\", $2, $5}'"
+        output = check_output(cmd)
+        size, usage = output.split()  # Split "28G 24%" into ["28G", "24%"]
+        info['root'] = (size, usage)
+        
+        for x in conf['disk']['extra']:
+            cmd = "df -Bg | awk '$1==\"/dev/{}\" {{printf \"%s %s\", $2, $5}}'".format(x)
+            output = check_output(cmd)
+            size, usage = output.split()
+            info[x] = (size, usage)
+        
         cache['info'] = list(zip(*info.items()))
-        cache['time'] = time.time()
+        cache['time'] = time. time()
 
     return cache['info']
-
 
 def slider_next(pages):
     conf['idx'].value += 1
